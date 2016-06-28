@@ -141,7 +141,7 @@ export default class WebhookSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.service.iconTitle'
-                            defaultMessage='Enable webhooks and slash commands to override profile picture icons'
+                            defaultMessage='Enable webhooks and slash commands to override profile picture icons:'
                         />
                     }
                     helpText={

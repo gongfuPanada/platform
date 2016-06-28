@@ -108,7 +108,7 @@ export default class RateSettings extends AdminSettings {
                     helpText={
                         <FormattedMessage
                             id='admin.rate.memoryDescription'
-                            defaultMessage='Maximum number of users sessions connected to the system as determined by "Vary By Remote Address" and "Vary By Header" settings below.'
+                            defaultMessage='Maximum number of users sessions connected to the system as determined by "Vary rate limit by remote address" and "Vary rate limit by HTTP header".'
                         />
                     }
                     value={this.state.memoryStoreSize}
@@ -120,7 +120,7 @@ export default class RateSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.rate.remoteTitle'
-                            defaultMessage='Vary limit by remote address: '
+                            defaultMessage='Vary rate limit by remote address: '
                         />
                     }
                     helpText={
@@ -138,7 +138,7 @@ export default class RateSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.rate.httpHeaderTitle'
-                            defaultMessage='Vary limit by HTTP header:'
+                            defaultMessage='Vary rate limit by HTTP header:'
                         />
                     }
                     placeholder={Utils.localizeMessage('admin.rate.httpHeaderExample', 'Ex "X-Real-IP", "X-Forwarded-For"')}

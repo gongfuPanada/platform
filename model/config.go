@@ -203,6 +203,7 @@ type LdapSettings struct {
 	// Advanced
 	SkipCertificateVerification *bool
 	QueryTimeout                *int
+	MaxPageSize                 *int
 
 	// Customization
 	LoginFieldName *string
@@ -516,6 +517,11 @@ func (o *Config) SetDefaults() {
 		*o.LdapSettings.QueryTimeout = 60
 	}
 
+	if o.LdapSettings.MaxPageSize == nil {
+		o.LdapSettings.MaxPageSize = new(int)
+		*o.LdapSettings.MaxPageSize = 0
+	}
+
 	if o.LdapSettings.LoginFieldName == nil {
 		o.LdapSettings.LoginFieldName = new(string)
 		*o.LdapSettings.LoginFieldName = ""
@@ -712,6 +718,10 @@ func (o *Config) IsValid() *AppError {
 
 	if *o.LdapSettings.SyncIntervalMinutes <= 0 {
 		return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_sync_interval.app_error", nil, "")
+	}
+
+	if *o.LdapSettings.MaxPageSize < 0 {
+		return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_max_page_size.app_error", nil, "")
 	}
 
 	if *o.LdapSettings.Enable {

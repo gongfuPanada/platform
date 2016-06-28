@@ -92,7 +92,7 @@ export default class StorageSettings extends AdminSettings {
                     }
                     helpText={
                         <FormattedMessage
-                            id='admin.image.storageDescription'
+                            id='admin.image.storeDescription'
                             defaultMessage='Storage system where files and image attachments are saved.<br /><br />
                             Selecting "Amazon S3" enables fields to enter your Amazon credentials and bucket details.<br /><br />
                             Selecting "Local File System" enables the field to specify a local file directory.

@@ -54,7 +54,7 @@ export default class DeveloperSettings extends AdminSettings {
                     helpText={
                         <FormattedMessage
                             id='admin.service.testingDescription'
-                            defaultMessage='When true, /loadtest slash command is enabled to load test accounts and test data. This setting also hides any features for disabling text formatting. Changing this will require a server restart before taking effect.'
+                            defaultMessage='When true, /loadtest slash command is enabled to load test accounts, data and text formatting. Changing this requires a server restart before taking effect.'
                         />
                     }
                     value={this.state.enableTesting}
@@ -71,7 +71,7 @@ export default class DeveloperSettings extends AdminSettings {
                     helpText={
                         <FormattedMessage
                             id='admin.service.developerDesc'
-                            defaultMessage='When true, Javascript errors will be shown in a red bar at the top of the user interface. Not recommended for use in production. '
+                            defaultMessage='When true, Javascript errors are shown in a red bar at the top of the user interface. Not recommended for use in production. '
                         />
                     }
                     value={this.state.enableDeveloper}

@@ -11,6 +11,7 @@ import ErrorStore from 'stores/error_store.jsx';
 import NotificationStore from 'stores/notification_store.jsx'; //eslint-disable-line no-unused-vars
 
 import Client from 'utils/web_client.jsx';
+import WebSocketClient from 'utils/websocket_client.jsx';
 import * as Utils from 'utils/utils.jsx';
 import * as AsyncClient from 'utils/async_client.jsx';
 import * as GlobalActions from 'actions/global_actions.jsx';
@@ -21,15 +22,9 @@ const SocketEvents = Constants.SocketEvents;
 import {browserHistory} from 'react-router/es6';
 
 const MAX_WEBSOCKET_FAILS = 7;
-const WEBSOCKET_RETRY_TIME = 3000;
-
-var conn = null;
-var connectFailCount = 0;
-var pastFirstInit = false;
-var manuallyClosed = false;
 
 export function initialize() {
-    if (window.WebSocket && !conn) {
+    if (window.WebSocket) {
         let protocol = 'ws://';
         if (window.location.protocol === 'https:') {
             protocol = 'wss://';
@@ -37,77 +32,35 @@ export function initialize() {
 
         const connUrl = protocol + location.host + ((/:\d+/).test(location.host) ? '' : Utils.getWebsocketPort(protocol)) + Client.getUsersRoute() + '/websocket';
 
-        if (connectFailCount === 0) {
-            console.log('websocket connecting to ' + connUrl); //eslint-disable-line no-console
-        }
-
-        manuallyClosed = false;
-
-        conn = new WebSocket(connUrl);
-
-        conn.onopen = () => {
-            if (connectFailCount > 0) {
-                console.log('websocket re-established connection'); //eslint-disable-line no-console
-                AsyncClient.getChannels();
-                AsyncClient.getPosts(ChannelStore.getCurrentId());
-            }
-
-            if (pastFirstInit) {
-                ErrorStore.clearLastError();
-                ErrorStore.emitChange();
-            }
-
-            pastFirstInit = true;
-            connectFailCount = 0;
-        };
-
-        conn.onclose = () => {
-            conn = null;
-
-            if (connectFailCount === 0) {
-                console.log('websocket closed'); //eslint-disable-line no-console
-            }
-
-            if (manuallyClosed) {
-                return;
-            }
-
-            connectFailCount = connectFailCount + 1;
-
-            if (connectFailCount > MAX_WEBSOCKET_FAILS) {
-                ErrorStore.storeLastError({message: Utils.localizeMessage('channel_loader.socketError', 'Please check connection, Mattermost unreachable. If issue persists, ask administrator to check WebSocket port.')});
-            }
-
-            ErrorStore.setConnectionErrorCount(connectFailCount);
-            ErrorStore.emitChange();
-
-            setTimeout(
-                () => {
-                    initialize();
-                },
-                WEBSOCKET_RETRY_TIME
-            );
-        };
-
-        conn.onerror = (evt) => {
-            if (connectFailCount <= 1) {
-                console.log('websocket error'); //eslint-disable-line no-console
-                console.log(evt); //eslint-disable-line no-console
-            }
-        };
-
-        conn.onmessage = (evt) => {
-            const msg = JSON.parse(evt.data);
-            handleMessage(msg);
-        };
+        WebSocketClient.initialize(connUrl);
+        WebSocketClient.setEventCallback(handleEvent);
+        WebSocketClient.setReconnectCallback(handleReconnect);
+        WebSocketClient.setCloseCallback(handleClose);
     }
 }
 
-function handleMessage(msg) {
-    // Let the store know we are online. This probably shouldn't be here.
-    UserStore.setStatus(msg.user_id, 'online');
+export function close() {
+    WebSocketClient.close();
+}
 
-    switch (msg.action) {
+function handleReconnect() {
+    AsyncClient.getChannels();
+    AsyncClient.getPosts(ChannelStore.getCurrentId());
+    ErrorStore.clearLastError();
+    ErrorStore.emitChange();
+}
+
+function handleClose(failCount) {
+    if (failCount > MAX_WEBSOCKET_FAILS) {
+        ErrorStore.storeLastError({message: Utils.localizeMessage('channel_loader.socketError', 'Please check connection, Mattermost unreachable. If issue persists, ask administrator to check WebSocket port.')});
+    }
+
+    ErrorStore.setConnectionErrorCount(failCount);
+    ErrorStore.emitChange();
+}
+
+function handleEvent(msg) {
+    switch (msg.event) {
     case SocketEvents.POSTED:
     case SocketEvents.EPHEMERAL_MESSAGE:
         handleNewPostEvent(msg);
@@ -157,36 +110,14 @@ function handleMessage(msg) {
     }
 }
 
-export function sendMessage(msg) {
-    if (conn && conn.readyState === WebSocket.OPEN) {
-        var teamId = TeamStore.getCurrentId();
-        if (teamId && teamId.length > 0) {
-            msg.team_id = teamId;
-        }
-
-        conn.send(JSON.stringify(msg));
-    } else if (!conn || conn.readyState === WebSocket.Closed) {
-        conn = null;
-        initialize();
-    }
-}
-
-export function close() {
-    manuallyClosed = true;
-    connectFailCount = 0;
-    if (conn && conn.readyState === WebSocket.OPEN) {
-        conn.close();
-    }
-}
-
 function handleNewPostEvent(msg) {
-    const post = JSON.parse(msg.props.post);
+    const post = JSON.parse(msg.data.post);
     GlobalActions.emitPostRecievedEvent(post, msg);
 }
 
 function handlePostEditEvent(msg) {
     // Store post
-    const post = JSON.parse(msg.props.post);
+    const post = JSON.parse(msg.data.post);
     PostStore.storePost(post);
     PostStore.emitChange();
 
@@ -199,7 +130,7 @@ function handlePostEditEvent(msg) {
 }
 
 function handlePostDeleteEvent(msg) {
-    const post = JSON.parse(msg.props.post);
+    const post = JSON.parse(msg.data.post);
     GlobalActions.emitPostDeletedEvent(post);
 }
 
@@ -228,12 +159,12 @@ function handleUserRemovedEvent(msg) {
     if (UserStore.getCurrentId() === msg.user_id) {
         AsyncClient.getChannels();
 
-        if (msg.props.remover_id !== msg.user_id &&
+        if (msg.data.remover_id !== msg.user_id &&
                 msg.channel_id === ChannelStore.getCurrentId() &&
                 $('#removed_from_channel').length > 0) {
             var sentState = {};
             sentState.channelName = ChannelStore.getCurrent().display_name;
-            sentState.remover = UserStore.getProfile(msg.props.remover_id).username;
+            sentState.remover = UserStore.getProfile(msg.data.remover_id).username;
 
             BrowserStore.setItem('channel-removed-state', sentState);
             $('#removed_from_channel').modal('show');
@@ -261,12 +192,12 @@ function handleChannelDeletedEvent(msg) {
 }
 
 function handlePreferenceChangedEvent(msg) {
-    const preference = JSON.parse(msg.props.preference);
+    const preference = JSON.parse(msg.data.preference);
     GlobalActions.emitPreferenceChangedEvent(preference);
 }
 
 function handleUserTypingEvent(msg) {
     if (TeamStore.getCurrentId() === msg.team_id) {
-        GlobalActions.emitRemoteUserTypingEvent(msg.channel_id, msg.user_id, msg.props.parent_id);
+        GlobalActions.emitRemoteUserTypingEvent(msg.channel_id, msg.user_id, msg.data.parent_id);
     }
 }

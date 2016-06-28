@@ -71,6 +71,8 @@ func InitUser() {
 	BaseRoutes.NeedUser.Handle("/sessions", ApiUserRequired(getSessions)).Methods("GET")
 	BaseRoutes.NeedUser.Handle("/audits", ApiUserRequired(getAudits)).Methods("GET")
 	BaseRoutes.NeedUser.Handle("/image", ApiUserRequiredTrustRequester(getProfileImage)).Methods("GET")
+
+	BaseRoutes.WebSocket.Handle("user_typing", ApiWebSocketHandler(userTyping))
 }
 
 func createUser(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -261,7 +263,7 @@ func CreateUser(user *model.User) (*model.User, *model.AppError) {
 		ruser.Sanitize(map[string]bool{})
 
 		// This message goes to every channel, so the channelId is irrelevant
-		go Publish(model.NewMessage("", "", ruser.Id, model.ACTION_NEW_USER))
+		go Publish(model.NewWebSocketEvent("", "", ruser.Id, model.WEBSOCKET_EVENT_NEW_USER))
 
 		return ruser, nil
 	}
@@ -2416,4 +2418,28 @@ func checkMfa(c *Context, w http.ResponseWriter, r *http.Request) {
 		rdata["mfa_required"] = strconv.FormatBool(result.Data.(*model.User).MfaActive)
 	}
 	w.Write([]byte(model.MapToJson(rdata)))
+}
+
+func userTyping(req *model.WebSocketRequest, responseData map[string]interface{}) *model.AppError {
+	var ok bool
+	var teamId string
+	if teamId, ok = req.Data["team_id"].(string); !ok || len(teamId) != 26 {
+		return NewInvalidWebSocketParamError(req.Action, "team_id")
+	}
+
+	var channelId string
+	if channelId, ok = req.Data["channel_id"].(string); !ok || len(channelId) != 26 {
+		return NewInvalidWebSocketParamError(req.Action, "channel_id")
+	}
+
+	var parentId string
+	if parentId, ok = req.Data["parent_id"].(string); !ok {
+		parentId = ""
+	}
+
+	event := model.NewWebSocketEvent(teamId, channelId, req.Session.UserId, model.WEBSOCKET_EVENT_TYPING)
+	event.Add("parent_id", parentId)
+	go Publish(event)
+
+	return nil
 }

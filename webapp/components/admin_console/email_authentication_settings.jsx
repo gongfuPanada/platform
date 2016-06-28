@@ -67,7 +67,7 @@ export default class EmailAuthenticationSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.email.allowEmailSignInTitle'
-                            defaultMessage='Enable login with email: '
+                            defaultMessage='Enable sign-in with email: '
                         />
                     }
                     helpText={
@@ -84,7 +84,7 @@ export default class EmailAuthenticationSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.email.allowUsernameSignInTitle'
-                            defaultMessage='Enable login with username: '
+                            defaultMessage='Enable sign-in with username: '
                         />
                     }
                     helpText={

@@ -391,7 +391,7 @@ export default class LdapSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.ldap.loginNameTitle'
-                            defaultMessage='Login Field Default Text:'
+                            defaultMessage='Sign-in Field Default Text:'
                         />
                     }
                     placeholder={Utils.localizeMessage('admin.ldap.loginNameEx', 'Ex "LDAP Username"')}

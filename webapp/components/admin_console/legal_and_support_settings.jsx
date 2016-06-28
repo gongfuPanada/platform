@@ -56,7 +56,7 @@ export default class LegalAndSupportSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.support.termsTitle'
-                            defaultMessage='Terms of Service Link:'
+                            defaultMessage='Terms of Service link:'
                         />
                     }
                     helpText={
@@ -73,7 +73,7 @@ export default class LegalAndSupportSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.support.privacyTitle'
-                            defaultMessage='Privacy Policy Link:'
+                            defaultMessage='Privacy Policy link:'
                         />
                     }
                     helpText={
@@ -90,7 +90,7 @@ export default class LegalAndSupportSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.support.aboutTitle'
-                            defaultMessage='About Link:'
+                            defaultMessage='About link:'
                         />
                     }
                     helpText={
@@ -107,7 +107,7 @@ export default class LegalAndSupportSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.support.helpTitle'
-                            defaultMessage='Help Link:'
+                            defaultMessage='Help link:'
                         />
                     }
                     helpText={
@@ -124,7 +124,7 @@ export default class LegalAndSupportSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.support.problemTitle'
-                            defaultMessage='Report a Problem Link:'
+                            defaultMessage='Report a Problem link:'
                         />
                     }
                     helpText={

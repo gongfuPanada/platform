@@ -61,7 +61,7 @@ export default class SessionSettings extends AdminSettings {
                     helpText={
                         <FormattedMessage
                             id='admin.service.webSessionDaysDesc'
-                            defaultMessage='Email or LDAP sessions will expire after the number of days specified and will require users to login again.'
+                            defaultMessage='Email or LDAP sessions will expire after the number of days specified and will require users to sign-in again.'
                         />
                     }
                     value={this.state.sessionLengthWebInDays}
@@ -79,7 +79,7 @@ export default class SessionSettings extends AdminSettings {
                     helpText={
                         <FormattedMessage
                             id='admin.service.mobileSessionDaysDesc'
-                            defaultMessage='Mobile sessions will expire after the number of days specified and will require users to login again.'
+                            defaultMessage='Mobile sessions will expire after the number of days specified and will require users to sign-in again.'
                         />
                     }
                     value={this.state.sessionLengthMobileInDays}
@@ -97,7 +97,7 @@ export default class SessionSettings extends AdminSettings {
                     helpText={
                         <FormattedMessage
                             id='admin.service.ssoSessionDaysDesc'
-                            defaultMessage='GitLab SSO sessions will expire after the number of days specified and will require users to login again.'
+                            defaultMessage='GitLab single-sign-on sessions will expire after the number of days specified and will require users to sign-in again.'
                         />
                     }
                     value={this.state.sessionLengthSSOInDays}

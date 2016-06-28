@@ -124,7 +124,7 @@ export default class WebhookSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.service.overrideTitle'
-                            defaultMessage='Enable webhooks and slash commands to override usernames'
+                            defaultMessage='Enable webhooks and slash commands to override usernames:'
                         />
                     }
                     helpText={
